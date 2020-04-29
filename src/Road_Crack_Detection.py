@@ -1,3 +1,4 @@
+# Importing the libraries and packages
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
@@ -20,7 +21,7 @@ import unittest
 class PictureManager(object):
           
     def clusterImage(self):
-        classifier = load_model('Vggcd.h5')
+        classifier = load_model('Vggcd.h5') # loading the model
         print("Vggcd.h5 loaded")
         
         Crack_dict = {"[0]": "crack", 
@@ -74,7 +75,7 @@ class PictureManager(object):
     def cluster_image_testing(self,name):
         
         
-        classifier = load_model('Vggcd.h5')
+        classifier = load_model('Vggcd.h5') # loading the model
         input_im = cv2.imread(name)
         input_original = input_im.copy()
         input_original = cv2.resize(input_original, None, fx=0.5, fy=0.5, interpolation = cv2.INTER_LINEAR)
@@ -144,7 +145,7 @@ class PictureManager(object):
         
         
         
-        
+# Fitting the model to the images        
         train_data_dir = 'trainingset1'
         validation_data_dir = 'test_set'
         
