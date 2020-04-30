@@ -72,9 +72,7 @@ class PictureManager(object):
             
             cv2.destroyAllWindows()
             
-    def cluster_image_testing(self,name):
-        
-        
+    def cluster_image_testing(self,name):        
         classifier = load_model('Vggcd.h5') # loading the model
         input_im = cv2.imread(name)
         input_original = input_im.copy()
@@ -83,13 +81,11 @@ class PictureManager(object):
         input_im = cv2.resize(input_im, (224, 224), interpolation = cv2.INTER_LINEAR)
         input_im = input_im / 255.
         input_im = input_im.reshape(1,224,224,3) 
-        
-        
+             
         res = np.argmax(classifier.predict(input_im, 1, verbose = 0), axis=1)
         
         if res==[0]:
-            return True
-            
+            return True            
         else:
             return False            
               
@@ -97,31 +93,22 @@ class PictureManager(object):
                 
     
     def processPictures(self):
-        
-        
+                
         img_rows = 224
         img_cols = 224 
                
         vgg16 = VGG16(weights = 'imagenet', 
                          include_top = False, 
                          input_shape = (img_rows, img_cols, 3))
-        
-        
+               
         
         for (i,layer) in enumerate(vgg16.layers):
-            print(str(i) + " "+ layer.__class__.__name__, layer.trainable)
-            
-        
-        
+            print(str(i) + " "+ layer.__class__.__name__, layer.trainable)       
         for layer in vgg16.layers:
-            layer.trainable = False
-            
-        
+            layer.trainable = False        
         for (i,layer) in enumerate(vgg16.layers):
             print(str(i) + " "+ layer.__class__.__name__, layer.trainable)
-            
-            
-            
+                      
         def addTopModel(bottom_model, num_classes, D=256):
             top_model = bottom_model.output
             top_model = Flatten(name = "flatten")(top_model)
@@ -130,21 +117,13 @@ class PictureManager(object):
             top_model = Dense(num_classes, activation = "softmax")(top_model)
             return top_model
         
-        
-        
-        
-        num_classes = 2
-        
-        FC_Head = addTopModel(vgg16, num_classes)
-        
-        model = Model(inputs=vgg16.input, outputs=FC_Head)
-        
+              
+        num_classes = 2        
+        FC_Head = addTopModel(vgg16, num_classes)       
+        model = Model(inputs=vgg16.input, outputs=FC_Head)       
         print(model.summary())
         
-        
-        
-        
-        
+              
 # Fitting the model to the images        
         train_data_dir = 'trainingset1'
         validation_data_dir = 'test_set'
@@ -158,8 +137,7 @@ class PictureManager(object):
               fill_mode='nearest')
          
         validation_datagen = ImageDataGenerator(rescale=1./255)
-         
-        
+                 
         train_batchsize = 16
         val_batchsize = 10
          
@@ -175,10 +153,7 @@ class PictureManager(object):
                 batch_size=val_batchsize,
                 class_mode='categorical',
                 shuffle=False)
-        
-        
-        
-                           
+                                  
         checkpoint = ModelCheckpoint("Vggcd.h5",
                                      monitor="val_loss",
                                      mode="min",
@@ -193,8 +168,7 @@ class PictureManager(object):
         
         
         callbacks = [earlystop, checkpoint]
-        
-        
+               
         model.compile(loss = 'categorical_crossentropy',
                       optimizer = RMSprop(lr = 0.001),
                       metrics = ['accuracy'])
@@ -216,3 +190,4 @@ class PictureManager(object):
 my_Model=PictureManager()
 my_Model.processPictures()
 my_Model.clusterImage()
+my_Model.cluster_image_testing('non_crack_image.jpg')
