@@ -1,187 +1,193 @@
-from tensorflow.python.keras.preprocessing.image import ImageDataGenerator, load_img
-from tensorflow.python.keras.models import Sequential
-from tensorflow.python.keras.layers import Conv2D, MaxPooling2D
-from tensorflow.python.keras.layers import Activation, Dropout, Flatten, Dense
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras import layers
-from tensorflow.python.keras import models
-import keras
-from tensorflow.python.keras import optimizers
+# Importing the libraries and packages
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
+from keras.layers.normalization import BatchNormalization
+from keras.models import Model
+from keras.applications import VGG16
 
-
-from tensorflow.python.keras.models import load_model
-from tensorflow.python.keras.preprocessing import image
+from keras.preprocessing.image import ImageDataGenerator
+from keras.optimizers import RMSprop
+from keras.callbacks import ModelCheckpoint, EarlyStopping
+import os
+import cv2
 import numpy as np
 from os import listdir
 from os.path import isfile, join
+from keras.models import load_model
+from keras.preprocessing import image
+
 
 class PictureManager(object):
-
-  def processPictures(self):
-
-    img_width = 150
-    img_height = 150
-
-    train_data_dir = '/content/drive/My Drive/Road/training_set'
-    validation_data_dir = '/content/drive/My Drive/Road/validation_set'
-    train_samples = 8000
-    validation_samples = 2000
-    epochs = 2
-    batch_size = 20
-
-
-    if K.image_data_format() == 'channels_first':
-      input_shape = (3, img_width, img_height)
-    else:
-      input_shape = (img_width, img_height, 3)
-
-    model = models.Sequential()
-    model.add(layers.Conv2D(32, (3, 3), activation='relu',                                                                                  
-                            input_shape=(150, 150, 3)))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Flatten())
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dense(1, activation='sigmoid'))    
-
-    model.compile(loss='binary_crossentropy',                
-                  optimizer='adam',
-                  metrics=['accuracy'])
-
-    train_datagen = ImageDataGenerator(                
-        rescale=1. / 255,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True)
-
-    test_datagen = ImageDataGenerator(rescale=1. / 255)
-
-    train_generator = train_datagen.flow_from_directory(        
-        train_data_dir,
-        target_size=(img_width, img_height),
-        batch_size=batch_size,
-        class_mode='binary')
-
-    print(train_generator.class_indices)
-
-    imgs, labels = next(train_generator)
-
-    from skimage import io
-
-    def imshow(image_RGB):
-      io.imshow(image_RGB)
-      io.show()
-
-    import matplotlib.pyplot as plt
-    %matplotlib inline
-    image_batch,label_batch = train_generator.next()
-
-    print(len(image_batch))
-    for i in range(0,len(image_batch)):
-      image = image_batch[i]
-      print(label_batch[i])
-      imshow(image)
-
-    validation_generator = test_datagen.flow_from_directory(                        
-        validation_data_dir,
-        target_size=(img_width, img_height),
-        batch_size=batch_size,
-        class_mode='binary')
-
-    history = model.fit_generator(        
-        train_generator,
-        steps_per_epoch=train_samples // batch_size,
-        epochs=epochs,
-        validation_data=validation_generator,
-        validation_steps=validation_samples // batch_size)
-
-    model.save('/content/drive/My Drive/Road/save.h5')
-    print("saved")
-
-    import matplotlib.pyplot as plt
-    %matplotlib inline
-
-    # list all data in history
-    print(history.history.keys())
-    # summarize history for accuracy
-    plt.plot(history.history['accuracy'])
-    plt.plot(history.history['val_accuracy'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
-    # summarize history for loss
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
-  
-  def test_clusterImage(self,name):
-    classifier = load_model('/content/drive/My Drive/Road/save.h5')
-   
-    # predicting images
-    from keras.preprocessing import image
-    noncrack_counter = 0 
-    crack_counter  = 0
-    img_width = 150
-    img_height = 150
-
-    img = image.load_img(name, target_size=(img_width, img_height))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
+          
+    def clusterImage(self):
+        classifier = load_model('Vggcd.h5') # loading the model
+        print("Vggcd.h5 loaded")
         
-    images = np.vstack([x])
-    classes = classifier.predict_classes(images, batch_size=20)
-    classes = classes[0][0]
+        Crack_dict = {"[0]": "crack", 
+                          "[1]": "non_crack"
+                         }
         
-    if classes == 0:
-      return True
-      print('Cracks')
-    else:
-      return False
-      print('Non_cracks')
-
-  def clusterImage(self):
-    classifier = load_model('/content/drive/My Drive/Road/save.h5')
-    ## Now Predict
-    predict_dir_path='/content/drive/My Drive/Road/test_set/'
-    onlyfiles = [f for f in listdir(predict_dir_path) if isfile(join(predict_dir_path, f))]
-    print(onlyfiles)
-
-    # predicting images
-    from keras.preprocessing import image
-    noncrack_counter = 0 
-    crack_counter  = 0
-    img_width = 150
-    img_height = 150
-    for file in onlyfiles:
-        img = image.load_img(predict_dir_path+file, target_size=(img_width, img_height))
-        x = image.img_to_array(img)
-        x = np.expand_dims(x, axis=0)
+        Crack_dict_n = {
+                          "crack": "crack", 
+                          "non_crack": "non_crack"
+                          }
+                         
         
-        images = np.vstack([x])
-        classes = classifier.predict_classes(images, batch_size=20)
-        classes = classes[0][0]
+        def draw_test(name, pred, im):
+            
+            cracking = Crack_dict[str(pred)]
+            BLACK = [0,0,0]
+            expanded_image = cv2.copyMakeBorder(im, 80, 0, 0, 100 ,cv2.BORDER_CONSTANT,value=BLACK)
+            cv2.putText(expanded_image, cracking, (20, 60) , cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,255), 2)
+            cv2.imshow(name, expanded_image)
         
-        if classes == 0:
-            print(file + ": " + 'Cracks')
-            crack_counter += 1
+        def getRandomImage(path):
+            
+            folders = list(filter(lambda x: os.path.isdir(os.path.join(path, x)), os.listdir(path)))
+            random_directory = np.random.randint(0,len(folders))
+            path_class = folders[random_directory]
+            print("Class - " + Crack_dict_n[str(path_class)])
+            file_path = path + path_class
+            file_names = [f for f in listdir(file_path) if isfile(join(file_path, f))]
+            random_file_index = np.random.randint(0,len(file_names))
+            image_name = file_names[random_file_index]
+            return cv2.imread(file_path+"/"+image_name)    
+        
+        for i in range(0,20):
+            input_im = getRandomImage('test_set/')
+            input_original = input_im.copy()
+            input_original = cv2.resize(input_original, None, fx=0.5, fy=0.5, interpolation = cv2.INTER_LINEAR)
+            
+            input_im = cv2.resize(input_im, (224, 224), interpolation = cv2.INTER_LINEAR)
+            input_im = input_im / 255.
+            input_im = input_im.reshape(1,224,224,3) 
+            
+            
+            res = np.argmax(classifier.predict(input_im, 1, verbose = 0), axis=1)
+            
+            
+            draw_test("Prediction", res, input_original) 
+            cv2.waitKey(0)
+            
+            cv2.destroyAllWindows()
+            
+    def cluster_image_testing(self,name):        
+        classifier = load_model('Vggcd.h5') # loading the model
+        input_im = cv2.imread(name)
+        input_original = input_im.copy()
+        input_original = cv2.resize(input_original, None, fx=0.5, fy=0.5, interpolation = cv2.INTER_LINEAR)
+        
+        input_im = cv2.resize(input_im, (224, 224), interpolation = cv2.INTER_LINEAR)
+        input_im = input_im / 255.
+        input_im = input_im.reshape(1,224,224,3) 
+             
+        res = np.argmax(classifier.predict(input_im, 1, verbose = 0), axis=1)
+        
+        if res==[0]:
+            return True            
         else:
-            print(file + ": " + 'Non_cracks')
-            noncrack_counter += 1
-    print("Total NonCracks :",noncrack_counter)
-    print("Total Cracks :",crack_counter)
-
+            return False            
+              
+        cv2.waitKey(0)
+                
+    
+    def processPictures(self):
+                
+        img_rows = 224
+        img_cols = 224 
+               
+        vgg16 = VGG16(weights = 'imagenet', 
+                         include_top = False, 
+                         input_shape = (img_rows, img_cols, 3))
+               
+        
+        for (i,layer) in enumerate(vgg16.layers):
+            print(str(i) + " "+ layer.__class__.__name__, layer.trainable)       
+        for layer in vgg16.layers:
+            layer.trainable = False        
+        for (i,layer) in enumerate(vgg16.layers):
+            print(str(i) + " "+ layer.__class__.__name__, layer.trainable)
+                      
+        def addTopModel(bottom_model, num_classes, D=256):
+            top_model = bottom_model.output
+            top_model = Flatten(name = "flatten")(top_model)
+            top_model = Dense(D, activation = "relu")(top_model)
+            top_model = Dropout(0.3)(top_model)
+            top_model = Dense(num_classes, activation = "softmax")(top_model)
+            return top_model
+        
+              
+        num_classes = 2        
+        FC_Head = addTopModel(vgg16, num_classes)       
+        model = Model(inputs=vgg16.input, outputs=FC_Head)       
+        print(model.summary())
+        
+              
+# Fitting the model to the images        
+        train_data_dir = 'trainingset1'
+        validation_data_dir = 'test_set'
+        
+        train_datagen = ImageDataGenerator(
+              rescale=1./255,
+              rotation_range=20,
+              width_shift_range=0.2,
+              height_shift_range=0.2,
+              horizontal_flip=True,
+              fill_mode='nearest')
+         
+        validation_datagen = ImageDataGenerator(rescale=1./255)
+                 
+        train_batchsize = 16
+        val_batchsize = 10
+         
+        train_generator = train_datagen.flow_from_directory(
+                train_data_dir,
+                target_size=(img_rows, img_cols),
+                batch_size=train_batchsize,
+                class_mode='categorical')
+         
+        validation_generator = validation_datagen.flow_from_directory(
+                validation_data_dir,
+                target_size=(img_rows, img_cols),
+                batch_size=val_batchsize,
+                class_mode='categorical',
+                shuffle=False)
+                                  
+        checkpoint = ModelCheckpoint("Vggcd.h5",
+                                     monitor="val_loss",
+                                     mode="min",
+                                     save_best_only = True,
+                                     verbose=1)
+        
+        earlystop = EarlyStopping(monitor = 'val_loss', 
+                                  min_delta = 0, 
+                                  patience = 3,
+                                  verbose = 1,
+                                  restore_best_weights = True)
+        
+        
+        callbacks = [earlystop, checkpoint]
+               
+        model.compile(loss = 'categorical_crossentropy',
+                      optimizer = RMSprop(lr = 0.001),
+                      metrics = ['accuracy'])
+        
+        nb_train_samples = 251
+        nb_validation_samples = 273
+        epochs = 3
+        batch_size = 16
+        
+        history = model.fit_generator(
+            train_generator,
+            steps_per_epoch = nb_train_samples // batch_size,
+            epochs = epochs,
+            callbacks = callbacks,
+            validation_data = validation_generator,
+            validation_steps = nb_validation_samples // batch_size)
+        
+        model.save("Vggcd.h5")
 my_Model=PictureManager()
 my_Model.processPictures()
 my_Model.clusterImage()
-my_Model.test_clusterImage('/content/drive/My Drive/Road/test_set/00002.jpg')
+my_Model.cluster_image_testing('non_crack_image.jpg')
