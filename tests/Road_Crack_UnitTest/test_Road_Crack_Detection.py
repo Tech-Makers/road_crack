@@ -27,13 +27,13 @@ class test_Picture_Manager(unittest.TestCase):
     def test_cluster_image_testingcrack(self):
         c = PictureManager()
         
-        self.assertEqual(c.cluster_image_testing("crack.jpg"),
+        self.assertEqual(c.cluster_image_Version_one("crack.jpg"),
                         True)
         
     def test_cluster_image_testinguncrack(self):
         c = PictureManager()
         
-        self.assertEqual(c.cluster_image_testing("non_crack.jpg"),
+        self.assertEqual(c.cluster_image_Version_one("non_crack.jpg"),
                         False)
         
         
