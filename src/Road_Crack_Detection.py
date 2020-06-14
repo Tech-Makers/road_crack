@@ -262,6 +262,7 @@ class Picture_Manager(Input_Manager,Upload_Manager):
         res = np.argmax(classifier.predict(input_im, 1, verbose = 0), axis=1)
         
         if res==[0]:
+            return True
             print ("True")
             self.uploader(name)
             self.image_status_crack(name)
@@ -269,6 +270,7 @@ class Picture_Manager(Input_Manager,Upload_Manager):
             
             
         else:
+            return False
             print ("False")
             self.image_status_noncrack(name)
             
