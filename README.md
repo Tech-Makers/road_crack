@@ -2,10 +2,20 @@
 
 ## Download Dataset 
  - [RoadCrack_Dataset](https://drive.google.com/open?id=1IvCbX3OndSFrwqX3nYhXnzkkCgMm1_tw)
- 
-  Release v0.1 - This is the initial release which contains the important functionality(Process Pictures) of our project.
-  
-  Release v0.1.1 - This release contains Bug Fixes of the initial release.
-  
-  Release v0.2 - This release contains the other functionalities( Upload to AWS server, Receive Images and Send Report) of our project.
+# Release Notes
+- v0.1
+This Release contains the functionalities :
+1. Process Picture
 
+- v0.1.1
+This Release contains the functionalities :
+1. Bug Fixes
+
+-v0.2
+This Release contains the functionalities :
+1. Upload to AWS Server
+2. Receive Images
+3. Send Report
+4. Bug Fixes
+5. Updated README
+  
