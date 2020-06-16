@@ -11,7 +11,7 @@ This Release contains the functionalities :
 This Release contains the functionalities :
 1. Bug Fixes
 
--v0.2
+- v0.2
 This Release contains the functionalities :
 1. Upload to AWS Server
 2. Receive Images
