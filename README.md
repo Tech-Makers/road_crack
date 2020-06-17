@@ -22,8 +22,9 @@ This Release contains the functionalities :
 
 - v1.0
 This Final Release contains the functionalities :
-1. Process Pictures
-2. Upload to AWS Server
-3. Receive Images
-4. Send Mail/Report
-5. Updated README
+1. Take Pictures([Application](https://github.com/Tech-Makers/CDS))
+2. Process Pictures
+3. Upload to AWS Server
+4. Receive Images
+5. Send Mail/Report
+6. Updated README
