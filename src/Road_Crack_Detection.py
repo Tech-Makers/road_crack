@@ -32,7 +32,7 @@ from os import walk
 import zipfile
 from datetime import datetime
 
-class Delete_Manager:
+class delete_manager:
     def thedelete(self) :
         
         dir_path1 = 'F:\crack\crack_clustered'
@@ -87,7 +87,7 @@ class Delete_Manager:
            
             
             
-class Upload_Manager:
+class upload_manager:
     def uploader(self,filename):
         with open(filename , "rb") as f:
            data = f.read()
@@ -108,7 +108,7 @@ class Upload_Manager:
 
                
 #This function has to be visited
-class Input_Manager:
+class download_manager:
     def __init__(self):
         
         directory1 = "my_dataset_final"
@@ -141,7 +141,7 @@ class Input_Manager:
         
 
 
-class bucket_creater:
+'''class bucket_creater:
     def __init__(self):
         client = boto3.client('s3')
         response = client.create_bucket(ACL='private',
@@ -149,18 +149,18 @@ class bucket_creater:
                                         CreateBucketConfiguration={
                                             'LocationConstraint': 'ap-south-1'
                                         }
-                                       )
+                                       )'''
 
 
-class Report_Manager:
+class report_generator:
     def mail(self,to, subject, text, attach):
         if not isinstance(to,list):
             to = [to]
         
         if not isinstance(attach,list):
             attach = [attach]
-        gmail_user='#######@gmail.com'
-        gmail_pwd = "########"
+        gmail_user='techmakers1234@gmail.com'
+        gmail_pwd = "Tech#1234"
         msg = MIMEMultipart()
         msg['From'] = gmail_user
         msg['To'] = ", ".join(to)
@@ -222,17 +222,18 @@ class Report_Manager:
             M[i]="F:\\crack\\RAR_File\\" + M[i]
             print(M)
         
+        
         subject='Road Crack data Report'
         bodytext='This is the report we get after analysing the data an urgent action is to be taken on the following data'
 
         
-        self.mail(['#####@gmail.com','######@gmail.com'], subject, bodytext,M)
+        self.mail(['souvikghosal748@gmail.com','debkanyabose44@gmail.com'], subject, bodytext,M)
         print("Report Created")
         
                 
 
 
-class Picture_Manager(Input_Manager,Upload_Manager):
+class Picture_Manager(download_manager,upload_manager):
     
     def place_file_to_folder(self,file_name, folder_name):
         os.makedirs(folder_name, mode = 0o777, exist_ok = True)
@@ -251,6 +252,9 @@ class Picture_Manager(Input_Manager,Upload_Manager):
     def cluster_image_Version_one(self,name):
         classifier = load_model('Vggcd.h5')
         input_im = cv2.imread(name)
+        input_im=cv2.GaussianBlur(input_im,(5,5),0)#smoothing of my image
+        input_im=cv2.medianBlur( input_im,5) #removal of salt and peper noise
+        input_im=cv2.bilateralFilter(input_im,9,75,75)
         input_original = input_im.copy()
         input_original = cv2.resize(input_original, None, fx=0.5, fy=0.5, interpolation = cv2.INTER_LINEAR)
         
@@ -262,15 +266,14 @@ class Picture_Manager(Input_Manager,Upload_Manager):
         res = np.argmax(classifier.predict(input_im, 1, verbose = 0), axis=1)
         
         if res==[0]:
-            return True
             print ("True")
             self.uploader(name)
             self.image_status_crack(name)
             
             
             
+            
         else:
-            return False
             print ("False")
             self.image_status_noncrack(name)
             
@@ -463,19 +466,29 @@ my_Model=Picture_Manager()
 
 
 f = []
-for (dirpath, dirnames, filenames) in walk("F:\crack\my_dataset_final\images\crack\my_dataset_final"):
+for (dirpath, dirnames, filenames) in walk("F:\crack\my_dataset_final\images"):
     f.extend(filenames)
     break
 
 for i in range(0,len(f)):
-    f[i]="F:\\crack\\my_dataset_final\\images\\crack\my_dataset_final\\" + f[i]
-
+    f[i]="F:\\crack\\my_dataset_final\\images\\" + f[i]
+print(f)
 for i in f:
     my_Model.cluster_image_Version_one(i)
 print("Both the folder created now preparing to send the mail")
-r=Report_Manager()
+r=report_generator()
 r.report()
 
-d=Delete_Manager()
+d=delete_manager()
 d.thedelete()
 print("deleted everything")
+
+    
+
+
+
+    
+    
+
+
+    
